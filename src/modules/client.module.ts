@@ -1,19 +1,26 @@
-import { StargateClient } from "@cosmjs/stargate";
+import type { OfflineSigner } from "@cosmjs/proto-signing";
+import { GasPrice, SigningStargateClient, StargateClient } from "@cosmjs/stargate";
 import type { GonkaConnectOptions } from "../types";
 
+const PORT_REGEX = /^(https?:\/\/[^:/]+)(:\d+)?/;
 export class GonkaClient {
   constructor(private readonly opts: Required<GonkaConnectOptions>) {}
 
+  get url() {
+    // remove port by regex
+    const match = this.opts.url.match(PORT_REGEX);
+    if (match) {
+      return match[1];
+    }
+    return this.opts.url;
+  }
+
   get rpcUrl() {
-    return `${this.opts.url}:${this.opts.rpcPort}`;
+    return `${this.url}:${this.opts.rpcPort}`;
   }
 
   get apiUrl() {
-    return `${this.opts.url}:${this.opts.apiPort}/chain-api`;
-  }
-
-  get gasPrice() {
-    return this.opts.gasPrice;
+    return `${this.url}:${this.opts.apiPort}/chain-api`;
   }
 
   get denom() {
@@ -22,6 +29,16 @@ export class GonkaClient {
 
   async connect() {
     return StargateClient.connect(this.rpcUrl);
+  }
+
+  async gasPrice(gasPrice?: string) {
+    return GasPrice.fromString(gasPrice ?? this.opts.gasPrice);
+  }
+
+  async connectSigner(signer: OfflineSigner, gasPrice?: GasPrice) {
+    return await SigningStargateClient.connectWithSigner(this.rpcUrl, signer, {
+      gasPrice,
+    });
   }
 
   async chainApi<T>(url: string): Promise<T> {

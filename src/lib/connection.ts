@@ -8,7 +8,7 @@ import {
 } from "@/constants";
 import type { GonkaConnectOptions } from "../types";
 
-export function withDefaults(opts: GonkaConnectOptions): Required<GonkaConnectOptions> {
+export function withDefaults(opts?: GonkaConnectOptions): Required<GonkaConnectOptions> {
   return {
     url: opts?.url ?? GONKA_DEFAULT_NODE_URL,
     rpcPort: opts?.rpcPort ?? GONKA_DEFAULT_RPC_PORT,

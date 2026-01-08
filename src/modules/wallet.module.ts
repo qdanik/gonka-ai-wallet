@@ -62,23 +62,26 @@ export class WalletModule {
     };
   }
 
-  async getSigner(value: string): Promise<OfflineSigner> {
-    const words = value.trim().split(" ");
+  async signer(mnemonicOrPrivateKey: string): Promise<OfflineSigner> {
+    const words = mnemonicOrPrivateKey.trim().split(" ");
     if (words.length === 12 || words.length === 24) {
       // it's a mnemonic
-      return DirectSecp256k1HdWallet.fromMnemonic(value, {
+      return DirectSecp256k1HdWallet.fromMnemonic(mnemonicOrPrivateKey, {
         prefix: GONKA_ADDRESS_PREFIX,
         hdPaths: [GONKA_HD_PATH],
       });
     }
 
-    if (value.length === 64) {
+    if (mnemonicOrPrivateKey.length === 64) {
       // it's a private key
-      return DirectSecp256k1Wallet.fromKey(Buffer.from(value, "hex"), GONKA_ADDRESS_PREFIX);
+      return DirectSecp256k1Wallet.fromKey(
+        Buffer.from(mnemonicOrPrivateKey, "hex"),
+        GONKA_ADDRESS_PREFIX,
+      );
     }
 
     // assume it's a mnemonic
-    return DirectSecp256k1HdWallet.fromMnemonic(value, {
+    return DirectSecp256k1HdWallet.fromMnemonic(mnemonicOrPrivateKey, {
       prefix: GONKA_ADDRESS_PREFIX,
       hdPaths: [GONKA_HD_PATH],
     });

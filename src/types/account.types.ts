@@ -8,3 +8,5 @@ export type AccountSuccess = {
 };
 
 export type AccountBalance = GonkaSDKResults<AccountSuccess>;
+
+export type AccountBalances = GonkaSDKResults<AccountSuccess[]>;

@@ -1,4 +1,4 @@
-import type { StdFee } from "@cosmjs/stargate";
+import type { Event, StdFee } from "@cosmjs/stargate";
 import type { GonkaSDKResults } from "./base.types";
 
 export type TxEventAttribute = {
@@ -6,10 +6,7 @@ export type TxEventAttribute = {
   value: string;
 };
 
-export type TxEvent = {
-  type: string;
-  attributes: readonly TxEventAttribute[];
-};
+export type TxEvent = Event;
 
 export type TxStatusSuccess = {
   code: number;

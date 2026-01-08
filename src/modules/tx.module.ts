@@ -1,5 +1,5 @@
 import type { OfflineSigner } from "@cosmjs/proto-signing";
-import { calculateFee, coin, GasPrice, SigningStargateClient } from "@cosmjs/stargate";
+import { calculateFee, coin } from "@cosmjs/stargate";
 import { assertGonkaPrefix } from "@/lib/denom";
 import { TimeoutError, UnknownSignerError } from "@/lib/errors";
 import { sleep } from "@/lib/sleep";
@@ -82,10 +82,8 @@ export class TxModule {
     assertGonkaPrefix(account.address);
     assertGonkaPrefix(to);
 
-    const gasPrice = GasPrice.fromString(options?.gasPrice ?? this.client.gasPrice);
-    const signingClient = await SigningStargateClient.connectWithSigner(this.client.rpcUrl, from, {
-      gasPrice,
-    });
+    const gasPrice = await this.client.gasPrice(options?.gasPrice);
+    const signingClient = await this.client.connectSigner(from, gasPrice);
 
     const messages = {
       typeUrl: "/cosmos.bank.v1beta1.MsgSend",
