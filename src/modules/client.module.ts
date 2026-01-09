@@ -3,6 +3,7 @@ import { GasPrice, SigningStargateClient, StargateClient } from "@cosmjs/stargat
 import type { GonkaConnectOptions } from "../types";
 
 const PORT_REGEX = /^(https?:\/\/[^:/]+)(:\d+)?/;
+
 export class GonkaClient {
   constructor(private readonly opts: Required<GonkaConnectOptions>) {}
 
@@ -25,6 +26,14 @@ export class GonkaClient {
 
   get denom() {
     return this.opts.denom;
+  }
+
+  get txGasMultiplier() {
+    return this.opts.txGasMultiplier;
+  }
+
+  get voteGasMultiplier() {
+    return this.opts.voteGasMultiplier;
   }
 
   async connect() {

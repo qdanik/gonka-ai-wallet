@@ -421,6 +421,9 @@ async function sendTokens() {
 sendTokens().catch(console.error);
 ```
 
+If transaction fails, an error will be logged.
+If the `gasUsed` exceeds the `gasWanted`, consider increasing the `fee` and retrying. 1 fee unit = 38436 gas approx. 
+
 ### Wallet Recovery Example
 
 ```typescript
@@ -445,6 +448,38 @@ async function recoverWallet() {
 
 recoverWallet().catch(console.error);
 ```
+
+## Wallet Governance Example
+
+```typescript
+import { GonkaWalletSDK, VoteOption } from '@gonka-ai/wallet';
+
+async function voteOnProposal() {
+  const sdk = await GonkaWalletSDK.connect({
+    chainId: 'gonka-mainnet'
+  });
+
+  // Import wallet
+  const wallet = await sdk.wallet.fromMnemonic(
+    'your mnemonic phrase here'
+  );
+
+  const signer = wallet.data.signer;
+
+  // Vote on proposal ID 1 with option 'No'
+  const proposalId = 1;
+  const voteOption = VoteOption.VOTE_OPTION_NO;
+
+  const result = await sdk.tx.vote(
+    signer,
+    proposalId,
+    voteOption,
+    { memo: 'Voting on proposal' }
+  );
+
+  console.log('✅ Voted successfully!');
+  console.log('Transaction Hash:', result.data.txHash);
+}
 
 ## Security Best Practices
 

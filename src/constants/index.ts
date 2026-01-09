@@ -11,5 +11,7 @@ export const GONKA_CHAIN_ID = "gonka-mainnet";
 export const GONKA_ADDRESS_PREFIX = "gonka";
 export const GONKA_DENOM = "ngonka";
 export const GONKA_GAS_PRICE = "0.025ngonka";
+export const GONKA_TX_MULTIPLIER = 2;
+export const GONKA_VOTE_MULTIPLIER = 2;
 
 export const NGONKA_DECIMALS = 9;

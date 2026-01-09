@@ -5,6 +5,8 @@ import {
   GONKA_DEFAULT_RPC_PORT,
   GONKA_DENOM,
   GONKA_GAS_PRICE,
+  GONKA_TX_MULTIPLIER,
+  GONKA_VOTE_MULTIPLIER,
 } from "@/constants";
 import type { GonkaConnectOptions } from "../types";
 
@@ -16,5 +18,7 @@ export function withDefaults(opts?: GonkaConnectOptions): Required<GonkaConnectO
     chainId: opts?.chainId ?? GONKA_CHAIN_ID,
     denom: opts?.denom ?? GONKA_DENOM,
     gasPrice: opts?.gasPrice ?? GONKA_GAS_PRICE,
+    txGasMultiplier: opts?.txGasMultiplier ?? GONKA_TX_MULTIPLIER,
+    voteGasMultiplier: opts?.voteGasMultiplier ?? GONKA_VOTE_MULTIPLIER,
   };
 }

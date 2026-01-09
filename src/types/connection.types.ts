@@ -15,4 +15,10 @@ export type GonkaConnectOptions = {
   // @default '0.025ngonka'
   // Default gas price for transactions
   gasPrice?: "0.025ngonka";
+  // @default 2
+  // Default transaction gas multiplier
+  txGasMultiplier?: number;
+  // @default 1.5
+  // Default vote gas multiplier
+  voteGasMultiplier?: number;
 };

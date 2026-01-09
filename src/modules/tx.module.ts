@@ -14,9 +14,6 @@ import type { GonkaClient } from "./client.module";
 
 export class TxModule {
   constructor(private readonly client: GonkaClient) {}
-  // Starting with Cosmos SDK 0.47, we see many cases in which 1.3 is not enough anymore
-  // E.g. https://github.com/cosmos/cosmos-sdk/issues/16020
-  private readonly defaultGasMultiplier = 1.4;
 
   async details(txHash: string): Promise<TxStatusResults> {
     const result = await this.client.chainApi<TxBetaResult>(`/cosmos/tx/v1beta1/txs/${txHash}`);
@@ -69,14 +66,14 @@ export class TxModule {
   async send(
     from: OfflineSigner,
     to: string,
-    amount: string,
+    amount: string | number,
     options: TxSendOptions = {},
   ): Promise<TxSendResults> {
-    const { memo = "" } = options;
     if (!from) {
       throw new UnknownSignerError();
     }
 
+    const { memo = "" } = options;
     const [account] = await from.getAccounts();
 
     assertGonkaPrefix(account.address);
@@ -85,21 +82,24 @@ export class TxModule {
     const gasPrice = await this.client.gasPrice(options?.gasPrice);
     const signingClient = await this.client.connectSigner(from, gasPrice);
 
-    const messages = {
-      typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-      value: {
-        fromAddress: account.address,
-        toAddress: to,
-        amount: [coin(amount, this.client.denom)],
+    const messages = [
+      {
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: {
+          fromAddress: account.address,
+          toAddress: to,
+          amount: [coin(amount, this.client.denom)],
+        },
       },
-    };
+    ];
 
-    const gasEstimation = await signingClient.simulate(account.address, [messages], memo);
-    const gasLimit = Math.ceil(gasEstimation * this.defaultGasMultiplier);
+    const gasEstimation = await signingClient.simulate(account.address, messages, memo);
+    const gasLimit = Math.ceil(gasEstimation * this.client.txGasMultiplier);
+    const fee = options?.fee ?? calculateFee(gasLimit, gasPrice);
     const transactionId = await signingClient.signAndBroadcastSync(
       account.address,
-      [messages],
-      calculateFee(gasLimit, gasPrice),
+      messages,
+      fee,
       memo,
     );
     const response = await this.broadcastTx(transactionId);

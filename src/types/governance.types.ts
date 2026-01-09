@@ -16,6 +16,7 @@ export { VoteOption } from "cosmjs-types/cosmos/gov/v1beta1/gov";
 export type GovernanceVoteOptions = {
   memo?: string;
   gasPrice?: string;
+  // 1 fee equals to 38436 gas approximately
   fee?: StdFee | "auto" | number;
 };
 

@@ -1,5 +1,6 @@
 import type { OfflineSigner } from "@cosmjs/proto-signing";
 import {
+  calculateFee,
   type GovParamsType,
   type GovProposalId,
   QueryClient,
@@ -8,6 +9,7 @@ import {
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
 import type { ProposalStatus } from "cosmjs-types/cosmos/gov/v1beta1/gov";
 import { MsgVote } from "cosmjs-types/cosmos/gov/v1beta1/tx";
+import { UnknownSignerError } from "@/lib/errors";
 import type {
   GovernanceDeposit,
   GovernanceDeposits,
@@ -107,25 +109,34 @@ export class GovernanceModule {
     option: VoteOption,
     options: GovernanceVoteOptions = {},
   ): Promise<GovernanceVote> {
+    if (!signer) {
+      throw new UnknownSignerError();
+    }
+
+    const { memo = "" } = options;
     const [account] = await signer.getAccounts();
 
     const gasPrice = await this.client.gasPrice(options?.gasPrice);
     const signingClient = await this.client.connectSigner(signer, gasPrice);
 
-    const msg = MsgVote.fromPartial({
+    const messageValue = MsgVote.fromPartial({
       voter: account.address,
       proposalId: BigInt(proposalId),
       option: option,
     });
 
-    const fee = options?.fee ?? "auto";
-    const memo = options?.memo ?? "";
-    const response = await signingClient.signAndBroadcast(
-      account.address,
-      [{ typeUrl: "/cosmos.gov.v1.MsgVote", value: msg }],
-      fee,
-      memo,
-    );
+    const messages = [
+      {
+        typeUrl: "/cosmos.gov.v1.MsgVote",
+        value: messageValue,
+      },
+    ];
+
+    const gasEstimation = await signingClient.simulate(account.address, messages, memo);
+    const gasLimit = Math.ceil(gasEstimation * this.client.voteGasMultiplier);
+    const fee = options?.fee ?? calculateFee(gasLimit, gasPrice);
+
+    const response = await signingClient.signAndBroadcast(account.address, messages, fee, memo);
 
     return {
       success: true,
